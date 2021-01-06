@@ -1,4 +1,4 @@
-#+TITLE: Dotfiles
+#+TITLE: Configuration & Dotfiles
 #+STARTUP: overview hideblocks
 #+PROPERTY: header-args :mkdirp yes
 
@@ -646,7 +646,6 @@ echo "Hello World"
      dotspacemacs-pretty-docs nil))
     #+end_src 
 
-
 *** dotspacemacs/user
 
     As you can see below not much is customized or added here by me. So have just copied and pasted directly from the default ~.spacemacs~ file.
@@ -677,7 +676,6 @@ echo "Hello World"
 
     #+end_src
 
-
 *** dotspacemacs/user-config
 
     This is the bulk of where my customization occurs. One of the issues that I have had is this has things in it, which I am sure what exactly it does.
@@ -706,7 +704,6 @@ echo "Hello World"
 
 
     #+end_src
-
 
 *** windows_nt 
 
@@ -803,7 +800,6 @@ echo "Hello World"
     #+end_src
 
 
-
 *** org-mode
 
     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
@@ -894,7 +890,6 @@ echo "Hello World"
       cat ~/.ssh/id_rsa.pub
     #+end_src
 
-
 *** install terraform
 
     #+begin_src shell
@@ -904,7 +899,6 @@ echo "Hello World"
       unzip terraform_0.12.28_linux_amd64.zip
       mv terraform /usr/local/bin/terraform
     #+end_src
-
 
 *** rdp connection
     
@@ -958,7 +952,6 @@ echo "Hello World"
  ResultActive=yes
  #+end_src
 
-
 *** display monitors go blank
 
     If this happens generally all that is required is an update of the packages and a restart
@@ -982,6 +975,126 @@ echo "Hello World"
 
 
 
+** Home Assistant
+
+   Home Assistant configuration. How this is set up is described with https://dilzeem.github.io/posts/home-assitant/.
+   How the automations are set up are described here.
+
+   
+ #+begin_src yaml :tangle "~/projets/hassio/configuration.yaml"
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+tibber:
+  access_token: !secret tibber_token
+
+influxdb:
+
+
+climate:
+- platform: generic_thermostat
+  name: Ania Office Heater
+  heater: switch.kitchen_1
+  target_sensor: sensor.ania_office
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+  
+- platform: generic_thermostat
+  name: Bedroom Heater
+  heater: switch.bedroom
+  target_sensor: sensor.bedroom
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+- platform: generic_thermostat
+  name: Hallway Heater
+  heater: switch.hallway
+  target_sensor: sensor.living_room
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+- platform: generic_thermostat
+  name: Kitchen Heater
+  heater: switch.kitchen_2
+  target_sensor: sensor.kitchen
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+- platform: generic_thermostat
+  name: Living Room L Heater
+  heater: switch.living_room_l
+  target_sensor: sensor.living_room
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+- platform: generic_thermostat
+  name: Living Room R Heater
+  heater: switch.living_room_r
+  target_sensor: sensor.living_room
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+
+- platform: generic_thermostat
+  name: Siv Office Heater
+  heater: switch.siv_office_2
+  target_sensor: sensor.siv_office
+  min_temp: 16.0
+  max_temp: 25.0
+  ac_mode: False
+  target_temp: 20.0
+  cold_tolerance: 0.0
+  hot_tolerance: 0.0
+  initial_hvac_mode: "off"
+  away_temp: 16
+
+
+ #+end_src
+
+
+ 
+   
 ** TODO mu4e
    Check the video and see if it will be useful to set up email integration in emacs
   
