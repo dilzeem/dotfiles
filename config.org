@@ -1,0 +1,1069 @@
+#+TITLE: Dotfiles
+#+STARTUP: overview hideblocks
+#+PROPERTY: header-args :mkdirp yes
+
+
+
+* About
+  
+  This file outlines how my computer is set up. With all the tools that I usually use.
+  By documenting this using [[https://en.wikipedia.org/wiki/Literate_programming][literate programming]] am to be explain the use of tools and maintain a consistent development environment across different machines.
+
+
+  
+** Emacs & Org-mode
+
+   [[https://orgmode.org/][Org mode]] is a tool that enables me to document my configuration files and practice literate programming.
+   The tool is one of the awesome many features that you can utilize when you are using Emacs. 
+
+   Below I outline a few features that I am using to help to keep the documentation concise and reproducible.
+   
+*** source blocks language
+
+    In org mode you are able your something called [[https://orgmode.org/manual/Working-with-Source-Code.html][source blocks]] that can define code snippets. We are able to use different languages by placing it in the header below.
+
+    Python:
+    #+begin_src python
+print("hello world")
+    #+end_src
+
+    Shell:
+    #+begin_src shell
+echo "Hello World"
+    #+end_src
+    
+
+*** tangle
+
+    Tangle is the process of exporting these source blocks. There are a few features we can use to customize how we tangle these source books.
+
+    One of the first things one can do is of the export source blocks to a particular file which is done with a header argument.
+
+    #+begin_src :tangle  "clean-install.sh"
+    sudo apt-get install firefox
+    #+end_src
+
+   This will export the file to ~clean-install.sh~ in the current directory.
+
+   Also sometimes you wish to tangle onlyh a subtree. This can be done easily by narrowing the buffer to the subtree using the commands ~, s n~ and tangle the buffer with ~, b t~.
+   Once that is done then you can widen back to see the entire file ~, s w~. 
+
+   
+*** run sudo commands in a specific directory
+
+    In the previous example, if you would like to execute the following command we would need to have elevated privileges. To overcome this we can add another header that will allow us to run ~sudo~ commands in the directory as seen below.
+
+    
+   #+BEGIN_SRC shell :dir "/sudo::/somedirectory/"  :tangle "./clean-install.sh" 
+    sudo apt-get install firefox
+    #+end_src 
+
+    This will execute the commands in ~somedirectory~. It should be noted that the directory path needs to be absolute and not relative. The sudo part can also be a remote machine as the underlying mechanisim used here is [[https://www.emacswiki.org/emacs/TrampMode][TRAMP]].
+
+    
+*** further resources 
+
+    There is a lot that can you leverage when using org mode and source blocks. ou can
+
+   - :cache - allows you to avoid reevaluating the unchanged code blocks
+   - :results - allows you to specify how the code will be displayed
+   - :async - allows the code to be run asynchronously 
+   - :session - defines a session for the code to run in so that you can maintain state of evaluated code
+      
+  This is an [[excellent blog post][excellent blog post]] outlining the power of literate programming and what can be achieved. The same author also created a [[https://www.youtube.com/watch?v=0g9BcZvQbXU][great video on writing technical documentation]].
+
+  Also here is another [[https://www.youtube.com/watch?v=qz9tSMsMDII][video]] showcasing the use of [[https://github.com/pashky/restclient.el][REST client]].
+
+  
+* Active
+
+  These are list of all the things and their configurations that I am using for my current computer setup.
+  
+** Linux
+
+   This section can apply to both a linux installation as well as Windows Subsystem for Linux.  
+   A lot of the tools are really not required if emacs, as there are similar tools/packages/functions that can achieve much of the same.
+ 
+**** firefox
+     This is mainly useful for running notebooks/web development from within WSL. There is no browser installed by WSL by default.
+
+   #+BEGIN_SRC shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+     sudo apt-get install firefox
+   #+END_SRC
+
+
+**** pandoc
+    
+     While org mode has inbuilt functions that export org files to formats that I require, pandoc takes it further an allows the possibility to convert org files to a greater amount of document types.
+     To use this within spacemacs this needs to be added to the ~.spacemacs~ file as a layer ~pandoc~.
+
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+     sudo apt-get install pandoc
+     #+end_src
+
+
+**** fish shell
+
+     [[https://fishshell.com/][Fish shell]] and  [[https://github.com/oh-my-fish/oh-my-fish][Oh my fish]]  are my preferred ways of using/configuring my shell. This is my preferred setup, as it looks nice and I like a lot of the auto complete features and nice history it provides. It also doesn't require to much configuration.
+     The only annoying this is that sometimes things just don't work (especially scripts), but it easy to drop back to bash for those moments.
+     
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+       sudo apt-add-repository ppa:fish-shell/release-3
+       sudo apt-get update
+       sudo apt-get install fish
+
+       curl -L https://get.oh-my.fish | fish
+       omf theme agnoster
+     #+end_src
+
+
+**** ripgrep
+
+    [[https://github.com/BurntSushi/ripgrep][Ripgrep]] is a faster version of grep. This also can be utilized by spacemancs when searching for text/files and is done by setting the default tool in the ~.spacemacs~ file.
+    
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+       sudo apt-get install ripgrep
+     #+end_src
+
+**** fd
+
+     [[https://github.com/sharkdp/fd][Fd]] is a faster version of find. Can be useful when wishing to search system wide for files.
+     
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+       sudo apt-get install fd-find
+     #+end_src
+    
+    
+
+
+** Python
+
+   Setting up python environment, which is my main programming language that I use. 
+
+*** install miniconda
+
+    I prefer to use [[https://docs.conda.io/en/latest/miniconda.html][miniconda]] just so it keeps the minimal as possible, and set up the python path nicely.
+    I don't use use ~conda~ command at prefer to use ~poetry~ (see below) for managing virtualenvs.
+    
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+      cd ~
+      wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+      bash Miniconda3-latest-Linux-x86_64.sh
+    #+end_src
+
+
+*** install poetry
+
+    [[https://python-poetry.org/][Poetry]] is my preferred way of managing virtualenvs as it allows for ease of packing up the code as well.
+    
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+    #+end_src
+
+
+*** pyenv
+
+    Sometimes it might be required that I need to use a specific version of Python.
+    This hasn't come around too often, but [[https://github.com/pyenv/pyenv][Pyenv]] helps me manage python versions.
+    
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+      sudo apt-get install -y make build-essential libssl-dev zlib1g-dev \
+           libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev\
+           libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+
+      git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+
+      echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+      echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+      echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi' >> ~/.bashrc
+    #+end_src
+
+    
+    
+
+** Clojure
+
+    https://purelyfunctional.tv/guide/how-to-install-clojure/
+
+*** Java
+
+    Clojure runs on the JVM, hence why we need to install java first before we can get install clojure
+    
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+       sudo apt-get install -y software-properties-common
+       wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
+       sudo add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
+       sudo apt-get update
+       sudo apt-get install -y adoptopenjdk-11-hotspot
+       java -version
+
+     #+end_src
+
+
+
+*** Clojure
+
+    Now we can install clojure, once the JVM has been installed.
+    
+    #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+      sudo apt-get install -y bash curl rlwrap
+      curl -O https://download.clojure.org/install/linux-install-1.10.1.763.sh
+      chmod +x linux-install-1.10.1.763.sh
+      sudo ./linux-install-1.10.1.763.sh
+      clj --version
+    #+end_src
+
+  
+*** TODO npm & Clojurescript
+   
+    To use clojurescript we need to install a few tools.
+
+    The first being NPM
+
+    Next we can install shadow-cljs so that we can us the NPM ecosystem for our clojurescript projects.
+
+    #+begin_src 
+ sudo apt install npm
+    #+end_src
+
+** Font
+
+   Download the fonts from [[https://github.com/ryanoasis/nerd-fonts/][nerd fonts]]. However there a lot of fonts here, so to make it easier we only need to download the fonts that are relevant and place them in the appropriate folder location.
+   The fonts can be downloaded from https://www.nerdfonts.com/font-downloads and can be viewed there as well.
+
+   An important note for `spacemacs` when you define the font it can be tricky to find out what the name of the of the font is called. The best way to determine what the name of the font is actually called is by opening up the tff file in Windows, and seeing in the dialog box what it is called. 
+  
+   
+    #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+     cd /usr/local/share/fonts/
+     wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/IBMPlexMono.zip
+     unzip IBMPlexMono.zip
+     rm IBMPlexMono.zip
+     #+end_src
+
+
+** Windows Terminal
+  
+ The settings.json file contains all the configuration for the windows terminal.
+ This is the basic one that I have used that has some nice shortcuts for tab management.
+
+ Also note that the font needs to be installed on windows first before it can be used.
+ See the [[*Font]] section of this config file.
+
+
+   #+begin_src json
+ {
+     "$schema": "https://aka.ms/terminal-profiles-schema",
+     "defaultProfile": "{2c4de342-38b7-51cf-b940-2309a097f518}",
+     "copyOnSelect": false,
+     "copyFormatting": false,
+     "profiles":
+     {
+         "defaults":
+         {
+         },
+         "list":
+         [
+             {
+                 // Make changes here to the powershell.exe profile.
+                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                 "name": "Windows PowerShell",
+                 "commandline": "powershell.exe",
+                 "hidden": false
+             },
+             {
+                 // Make changes here to the cmd.exe profile.
+                 "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                 "name": "Command Prompt",
+                 "commandline": "cmd.exe",
+                 "hidden": false
+             },
+             {
+                 "guid": "{2c4de342-38b7-51cf-b940-2309a097f518}",
+                 "hidden": false,
+                 "name": "Ubuntu",
+                 "source": "Windows.Terminal.Wsl",
+                 "colorScheme": "Monokai Cmder",
+                 "fontFace": "Hack Nerd Font Mono",
+                 "fontSize": 11
+             },
+             {
+                 "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+                 "hidden": false,
+                 "name": "Azure Cloud Shell",
+                 "source": "Windows.Terminal.Azure"
+             }
+         ]
+     },
+
+     "schemes": [
+         {
+             "name": "Monokai Cmder",
+             "black": "#272822",
+             "red": "#a70334",
+             "green": "#74aa04",
+             "yellow": "#b6b649",
+             "blue": "#01549e",
+             "purple": "#89569c",
+             "cyan": "#1a83a6",
+             "white": "#cacaca",
+             "brightBlack": "#7c7c7c",
+             "brightRed": "#f3044b",
+             "brightGreen": "#8dd006",
+             "brightYellow": "#cccc81",
+             "brightBlue": "#0383f5",
+             "brightPurple": "#a87db8",
+             "brightCyan": "#58c2e5",
+             "brightWhite": "#ffffff",
+             "background": "#272822",
+             "foreground": "#cacaca",
+             "selectionBackground": "#cccc81",
+             "cursorColor": "#ffffff"
+         }
+     ],
+
+     "actions":
+     [
+         { "command": {"action": "copy", "singleLine": false }, "keys": "ctrl+c" },
+         { "command": "paste", "keys": "ctrl+v" },
+
+         // Press Ctrl+Shift+F to open the search box
+         { "command": "find", "keys": "ctrl+f" },
+         { "command": "newTab", "keys": "ctrl+t" },
+         { "command": "nextTab", "keys": "ctrl+j" },
+         { "command": "prevTab", "keys": "ctrl+k" },
+         { "command": "closeTab", "keys": "ctrl+w" },
+
+         // Press Alt+Shift+D to open a new pane.
+         // - "split": "auto" makes this pane open in the direction that provides the most surface area.
+         // - "splitMode": "duplicate" makes the new pane use the focused pane's profile.
+         // To learn more about panes, visit https://aka.ms/terminal-panes
+         { "command": { "action": "splitPane", "split": "auto", "splitMode": "duplicate" }, "keys": "alt+shift+d" }
+     ]
+ }
+   #+end_src
+
+** Video Editing
+
+   Moving from using Adobe Premier Pro to DaVinci Resolve mainly because of the GPU enhancements provided with DaVinci Resolve and it is free version offers enough for me to work with.
+   However the shortcuts that I am familar with are described below for future reference. 
+  
+*** Shortcuts
+
+ | Command  Name              | Shortcut Key | Comments                                            |
+ |----------------------------+--------------+-----------------------------------------------------|
+ | Zoom In                    | =            |                                                     |
+ | Zoom Out                   | +            |                                                     |
+ | Ripple Delete              | Shift + D    |                                                     |
+ | Selection Follows Playhead | D            |                                                     |
+ | Razor                      | Ctrl + D     |                                                     |
+ | Reverse                    | J            |                                                     |
+ | Stop                       | K            |                                                     |
+ | Forward                    | L            |                                                     |
+ | Frame Reverse              | H            |                                                     |
+ | Frame Forward              | ;            |                                                     |
+ | Clip Edit Previous         | Ctrl + H     | Command name for this is under the heading previous |
+ | Clip Edit Next             | Ctrl + ;     | Command name for this is under the heading next     |
+ | Shift Clip Up              | Alt + Up     | Cannot modify this yet. It seems like a bug         |
+ | Shift Clip Down            | Alt + Down   | Cannot modify this yet. It seems like a bug         |
+ | Trim Start                 | Q            |                                                     |
+ | Trim End                   | W            |                                                     |
+ | Toggle Slip/Slide          | S            |                                                     |
+ | Nudge Left                 | ,            | Useful in Trim Mode with either slip/slide          |
+ | Nudge Right                | .            | Useful in Trim Mode with either slip/slide          |
+
+** .bashrc
+
+*** wsl
+
+    This is used for running an Xserver in WSL
+    
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.bashrc"
+      export DISPLAY_NUMBER="0.0"
+      export DISPLAY=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}'):$DISPLAY_NUMBER
+      export LIBGL_ALWAYS_INDIRECT=1
+    #+end_src
+
+*** alias
+
+    Simple alias just to replace fdfind with fd
+
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.bashrc"
+      alias fdfind=fd
+    #+end_src
+   
+
+*** python
+
+    setting ~WORKON_HOME~ is required to switch between virtual envs from emacs
+    the second line should part of the poetry installation process.
+
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.bashrc"
+      # Poetry setup
+      export WORKON_HOME="~/.cache/pypoetry/virtualenvs"
+      export PATH="$HOME/.poetry/bin:$PATH"
+    #+end_src
+   
+
+    this should be automatically put in as part of the installation process when install pyenv
+
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.bashrc"
+      export PYENV_ROOT="$HOME/.pyenv"
+      export PATH="$PYENV_ROOT/bin:$PATH"
+
+      if command -v pyenv 1>/dev/null 2>&1; then
+          eval "$(pyenv init -)"
+      fi
+
+    #+end_src
+
+
+    
+*** fish shell
+
+    Launch fish shell when everything has set been setup. However it will not always be the case that has been set in ~.bashrc~ is available in fish shell.
+    These would have to be set again explicitly in the fish sell config file.
+    
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.bashrc"
+      fish
+ #+end_src
+  
+** config.fish
+
+ A nice [[https://stackoverflow.com/questions/2762994/define-an-alias-in-fish-shell][SO question]] of how set up alias and the different options available.
+
+ #+begin_src shell :dir "/sudo::"  :tangle "~/.config/fish/config.fish"
+      alias fdfind="fd"
+ #+end_src
+
+** .profile
+
+  ~.profile~ are meant to be run once, where as ~.bashrc~ are mean to run for each new session.
+  However during the installation scripts of some of the software, they will put environment variables places you didn't expect.
+   
+#+begin_src shell :dir "/sudo::"  :tangle "~/.profile"
+  # https://www.taingram.org/blog/emacs-client.html
+  emacs --daemon
+  VISUAL='emacsclient -t'
+  export VISUAL
+ #+end_src
+
+** .Xmodmap
+   
+   This is used to remap CAPSLOCK (66) to Left Control (Control_L)
+
+#+begin_src shell :dir "/sudo::"  :tangle "~/.Xmodmap"
+ clear lock
+ clear control
+ keycode 66 = Control_L
+ add control = Control_L Control_R
+   #+end_src
+
+** Spacemacs
+
+   Currenlty Spacemacs is my main IDE for work and personal use. This was my gateway tool that got me into using Emacs.
+   I have tried using doom Emacs, and roll my own config but I liked how easy it was to get up and running with Spacemacs with minimal configuration.
+
+   Another thing for using spacemacs was the ability to use the same key bindings in VSCODE using the [[https://github.com/VSpaceCode/VSpaceCode][VSpaceCode]] extension.
+
+   I have decided to use [[https://orgmode.org/][org-mode]] to manage my .spacemacs configuration.
+   I haven't done anything advanced, and tried to keep it a simple as possible for now.
+   Currently I just want to document some of the reasonings for my configuration and be able to keep it one place.
+
+  
+*** dotspacemacs/layers
+
+     Layer configuration: This function should only modify configuration layer settings.
+     Ideally I would have liked to epxlain each of the layers what I was using and why, but I haven't figured out a clean way to do this, while managing my configuration with org file.
+
+    
+ #+begin_src elisp :tangle "~/.spacemacs"
+    (defun dotspacemacs/layers ()
+      (setq-default
+       dotspacemacs-distribution 'spacemacs
+       dotspacemacs-enable-lazy-installation 'unused
+       dotspacemacs-ask-for-lazy-installation t
+       dotspacemacs-configuration-layer-path '()
+
+       dotspacemacs-configuration-layers
+       '(
+         rust
+       shell-scripts
+       markdown
+       csv
+       lsp
+       html
+       terraform
+       clojure
+       docker
+       yaml
+       dap
+       lsp
+       syntax-checking
+       themes-megapack
+       better-defaults
+       emacs-lisp
+       treemacs
+       git
+       spell-checking
+
+       (ranger :variables ranger-cleanup-on-disable t)
+       (ibuffer :variables
+                 ibuffer-group-buffers-by 'modes)
+       (python :variables
+               python-test-runner 'pytest
+               python-formatter 'black
+               python-backend 'lsp
+               python-lsp-server 'mspyls
+               python-lsp-git-root "~/dev/python/python-language-server")
+
+       (helm :variables
+             helm-mode-fuzzy-match t
+             helm-completion-in-region-fuzzy-match t)
+       (colors :variables colors-enable-nyan-cat-progress-bar t)
+       (org :variables
+             org-want-todo-bindings t
+             org-enable-hugo-support t)
+       (shell :variables
+               shell-default-shell 'vterm)
+       (latex :variables
+               latex-enable-auto-fill t
+               latex-build-command "LaTeX")
+
+       ;; version-control
+       ;; (auto-completion :variables
+       ;;                  auto-completion-enable-help-tooltip t
+       ;;                  auto-completion-enable-snippets-in-popup 'manual)
+       )
+
+       dotspacemacs-additional-packages '(pocket-reader
+                                          doom-themes
+                                          ox-hugo
+                                          pretty-mode
+                                          )
+
+
+
+       dotspacemacs-frozen-packages '()
+       dotspacemacs-excluded-packages '()
+       dotspacemacs-install-packages 'used-only))
+    #+end_src 
+
+*** dotspacemacs/init
+
+  This function is called at the very beginning of Spacemacs startup,
+  before layer configuration. It should only modify the values of Spacemacs settings.
+
+  I haven't changed much here, mostly cosmetic things such as themes and fonts.
+   
+ #+begin_src elisp :tangle "~/.spacemacs"
+  (defun dotspacemacs/init ()
+    (setq-default
+     dotspacemacs-enable-emacs-pdumper nil
+     dotspacemacs-emacs-pdumper-executable-file "emacs-27.0.50"
+     dotspacemacs-emacs-dumper-dump-file "spacemacs.pdmp"
+     dotspacemacs-elpa-https t
+     dotspacemacs-elpa-timeout 5
+     dotspacemacs-gc-cons '(100000000 0.1)
+     dotspacemacs-use-spacelpa nil
+     dotspacemacs-verify-spacelpa-archives nil
+     dotspacemacs-check-for-update nil
+     dotspacemacs-elpa-subdirectory 'emacs-version
+     dotspacemacs-editing-style 'vim
+     dotspacemacs-verbose-loading nil
+     dotspacemacs-startup-banner 'official
+     dotspacemacs-startup-lists '((recents . 5)
+                                  (projects . 7))
+
+     dotspacemacs-startup-buffer-responsive t
+     dotspacemacs-scratch-mode 'text-mode
+     dotspacemacs-initial-scratch-message nil
+
+     dotspacemacs-themes '(
+                           spacemacs-light
+                           tangotango
+                           twilight-bright
+                           darkokai
+                           ujelly
+                           alect-dark
+                           espresso
+                           tsdh-dark
+                           professional
+                           monokai
+                           brin
+                           spacemacs-dark
+                           doom-nord-light
+                           )
+
+     dotspacemacs-mode-line-theme '(all-the-icons :separator wave :separator-scale 1.5)
+     dotspacemacs-colorize-cursor-according-to-state t
+     dotspacemacs-default-font '("Source Code Pro"
+                                 :size 16
+                                 :weight normal
+                                 :width normal)
+
+     dotspacemacs-leader-key "SPC"
+     dotspacemacs-emacs-command-key "SPC"
+     dotspacemacs-ex-command-key ":"
+     dotspacemacs-emacs-leader-key "M-m"
+     dotspacemacs-major-mode-leader-key ","
+     dotspacemacs-major-mode-emacs-leader-key "C-M-m"
+     dotspacemacs-distinguish-gui-tab nil
+     dotspacemacs-default-layout-name "Default"
+     dotspacemacs-display-default-layout nil
+     dotspacemacs-auto-resume-layouts nil
+     dotspacemacs-auto-generate-layout-names nil
+     dotspacemacs-large-file-size 1
+     dotspacemacs-auto-save-file-location 'cache
+     dotspacemacs-max-rollback-slots 5
+     dotspacemacs-enable-paste-transient-state nil
+     dotspacemacs-which-key-delay 0.4
+     dotspacemacs-which-key-position 'bottom
+     dotspacemacs-switch-to-buffer-prefers-purpose nil
+     dotspacemacs-loading-progress-bar t
+     dotspacemacs-fullscreen-at-startup nil
+     dotspacemacs-fullscreen-use-non-native nil
+     dotspacemacs-maximized-at-startup nil
+     dotspacemacs-active-transparency 90
+     dotspacemacs-inactive-transparency 90
+     dotspacemacs-show-transient-state-title t
+     dotspacemacs-show-transient-state-color-guide t
+     dotspacemacs-mode-line-unicode-symbols t
+     dotspacemacs-smooth-scrolling t
+     dotspacemacs-line-numbers nil
+     dotspacemacs-folding-method 'origami
+     dotspacemacs-smartparens-strict-mode nil
+     dotspacemacs-smart-closing-parenthesis nil
+     dotspacemacs-highlight-delimiters 'all
+     dotspacemacs-enable-server nil
+     dotspacemacs-server-socket-dir nil
+     dotspacemacs-persistent-server nil
+     dotspacemacs-search-tools '("rg" "ag" "pt" "ack" "grep")
+     dotspacemacs-frame-title-format "%I@%S"
+     dotspacemacs-icon-title-format nil
+     dotspacemacs-whitespace-cleanup "trailing"
+     dotspacemacs-zone-out-when-idle nil
+     dotspacemacs-pretty-docs nil))
+    #+end_src 
+
+
+*** dotspacemacs/user
+
+    As you can see below not much is customized or added here by me. So have just copied and pasted directly from the default ~.spacemacs~ file.
+
+ #+begin_src elisp :tangle "~/.spacemacs"
+ (defun dotspacemacs/user-env ()
+   "Environment variables setup.
+ This function defines the environment variables for your Emacs session. By
+ default it calls `spacemacs/load-spacemacs-env' which loads the environment
+ variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
+ See the header of this file for more information."
+   (spacemacs/load-spacemacs-env))
+
+ (defun dotspacemacs/user-init ()
+   "Initialization for user code:
+ This function is called immediately after `dotspacemacs/init', before layer
+ configuration.
+ It is mostly for variables that should be set before packages are loaded.
+ If you are unsure, try setting them in `dotspacemacs/user-config' first."
+   )
+
+ (defun dotspacemacs/user-load ()
+   "Library to load while dumping.
+ This function is called only while dumping Spacemacs configuration. You can
+ `require' or `load' the libraries of your choice that will be included in the
+ dump."
+   )
+
+    #+end_src
+
+
+*** dotspacemacs/user-config
+
+    This is the bulk of where my customization occurs. One of the issues that I have had is this has things in it, which I am sure what exactly it does.
+    By switching to this org-mode configuration I am hoping to have a better idea of why I have some of these code snippets.
+
+   
+    #+begin_src elisp :tangle "~/.spacemacs"
+
+
+      (defun dotspacemacs/user-config ()
+
+
+        (load-file "user-config.el")
+
+ )  
+
+    #+end_src
+
+*** clojure
+
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+      (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
+      (setq clojure-indent-style 'align-arguments)
+      (setq clojure-align-forms-automatically t)
+
+
+    #+end_src
+
+
+*** windows_nt 
+
+    This section is only really relevant when running Emacs in Windows (i.e. not WSL).
+    With the introduction of WSL as part of windows 10, this doesn't seem so relevant now.
+
+    The main point of this was for spell checking in windows 10.
+    Also included is a GUI prompt for when I am using git/ssh with a password.
+    This wasn't an issue when using linux.
+
+
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+      (cond
+       ((string-equal system-type "windows-nt")
+        (progn
+          (setenv "GIT_ASKPASS" "git-gui--askpass")
+          (setenv "SSH_ASKPASS" "git-gui--askpass")
+
+          (setq ispell-program-name "~/Hunspell/bin/hunspell.exe")
+          (setenv "LANG" "en_US")
+          (setq ispell-chage-dictionary "en_US")
+          (setq ispell-hunspell-dict-paths-alist
+                '(("en_US" "~/Hunspell/share/hunspell/en_GB.aff")))
+          )))
+
+    #+end_src
+   
+*** eshell
+
+    Eshell customization, however I have slowly migrated to using vterm as it meets most of my needs now.
+    This is kept here for the occasional where I would like to explore eshell functionalities further.
+
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+      ;; Eshell
+      ;; https://www.emacswiki.org/emacs/EshellPrompt
+      (defun shortened-path (path max-len)
+        "Return a modified version of `path', replacing some components
+      with single characters starting from the left to try and get
+      the path down to `max-len'"
+        (let* ((components (split-string (abbreviate-file-name path) "/"))
+               (len (+ (1- (length components))
+                       (reduce '+ components :key 'length)))
+               (str ""))
+          (while (and (> len max-len)
+                      (cdr components))
+            (setq str (concat str (if (= 0 (length (car components)))
+                                      "/"
+                                    (string (elt (car components) 0) ?/)))
+                  len (- len (1- (length (car components))))
+                  components (cdr components)))
+          (concat str (reduce (lambda (a b) (concat a "/" b)) components))))
+
+      (setq eshell-prompt-function
+            (lambda ()
+              (concat
+               (propertize "┌─[" 'face `(:foreground "green"))
+               (propertize (user-login-name) 'face `(:foreground "red"))
+               (propertize "@" 'face `(:foreground "green"))
+               (propertize (system-name) 'face `(:foreground "purple"))
+               (propertize "]──[" 'face `(:foreground "green"))
+               (propertize (format-time-string "%H:%M" (current-time)) 'face `(:foreground "yellow"))
+               (propertize "]──[" 'face `(:foreground "green"))
+               (propertize (concat (shortened-path (eshell/pwd) 40)) 'face `(:foreground "white"))
+               (propertize "]\n" 'face `(:foreground "green"))
+               (propertize "└─>" 'face `(:foreground "green"))
+               (propertize (if (= (user-uid) 0) " # " " $ ") 'face `(:foreground "green"))
+               )))
+
+
+      (defun make-shell (name)
+        "Create a shell buffer named NAME."
+        (interactive "sName: ")
+        (setq name (concat "eshell-" name))
+        (eshell)
+        (rename-buffer name))
+
+
+    #+end_src
+
+*** ox-hugo
+
+    Require for my current blogging setup.
+   
+   
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+      (use-package ox-hugo
+        :ensure t 
+        :after ox)
+
+
+    #+end_src
+
+
+
+*** org-mode
+
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+
+      (setq org-cycle-separator-lines 0)
+
+
+
+
+      (setq org-src-tab-acts-natively t)
+
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '(
+         (python . t)
+         (shell . t)
+         (clojure . t)
+         ))
+
+      (setq org-confirm-babel-evaluate nil)
+      (setq org-directory "~/Dropbox/org/i.org")
+
+      (setq org-agenda-files '("~/Dropbox/org/i.org"
+                               "~/Dropbox/org/k.org"))
+
+      (setq org-capture-templates
+            '(("t" "To Do Item" entry (file+headline "~/Dropbox/org/i.org" "Inbox")
+               "* TODO %?\nCREATED:%U" :prepend t)
+              ("j" "Journal" entry (file+datetree+prompt "~/Dropbox/org/j.org")
+               "* %?\n %t")
+              ("k" "knowledge" entry (file+olp+datetree "~/Dropbox/org/j.org")
+               "* %? %^g\n")
+              ("d" "distracted" table-line (file+headline "~/Dropbox/org/j.org" "Distractions")
+               "|%?||%U|")
+              ("h" "habit" table-line (file+headline  "~/Dropbox/org/j.org" "Habit")
+               "|%^{prompt|meditate|pushups|situps}|%?|%U|")
+              ("m" "mood" table-line (file+headline "~/Dropbox/org/j.org" "Mood")
+               "|%?||%U|")))
+
+
+      (setq org-archive-location "%s_archive::datetree/* Archived Tasks")
+
+
+
+
+    #+end_src
+
+*** misc 
+
+    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+      ;; (require 'org-tempo)
+
+      (setq python-indent-guess-indent-offset nil)
+      (setq helm-show-completion-display-function #'helm-show-completion-default-display-function)
+      (setq-default buffer-file-coding-system 'utf-8-unix)
+    #+end_src
+   
+*** Futher resources
+
+    There are some other interesting spacemac configurtations that I have come across that I would like to spend more time going through and copying some of the the relevant things across.
+
+   - https://github.com/toshism/dotfiles/tree/master/spacemacs
+   - https://labs.phundrak.com/phundrak/dotfiles/src/branch/master/org/config/emacs.org
+   - https://out-of-cheese-error.netlify.app/spacemacs-config
+   - https://github.com/pniedzielski/dotfiles-ng
+
+
+  
+     If I was ever to switch to doom emacs then this might worth considering
+   - https://github.com/lccambiaghi/.doom.d
+   
+** work computer stuff
+*** ssh-keys
+
+    https://support.atlassian.com/bitbucket-cloud/docs/set-up-an-ssh-key/
+
+    #+begin_src shell
+
+      ssh-keygen
+
+    #+end_src
+
+
+    Copy the following and add it to bitbucket
+    #+begin_src shell
+      cat ~/.ssh/id_rsa.pub
+    #+end_src
+
+
+*** install terraform
+
+    #+begin_src shell
+      cd ~
+      wget https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      sudo apt-get install unzip
+      unzip terraform_0.12.28_linux_amd64.zip
+      mv terraform /usr/local/bin/terraform
+    #+end_src
+
+
+*** rdp connection
+    
+     This allows us to use a windows machine to connect to Ubuntu using Citrix and Remote Desktop Connection
+     Most of the information is from here: https://linuxize.com/post/how-to-install-xrdp-on-ubuntu-18-04/
+   
+     #+begin_src shell
+
+       sudo apt-get install xorg dbus-x11 x11-xserver-utils
+       sudo apt-get install xrdp
+
+
+       sudo adduser xrdp ssl-cert  
+       sudo systemctl restart xrdp
+
+       sudo ufw allow 3389
+       # or 
+       sudo ufw allow from 192.168.1.0/24 to any port 3389
+
+       sudo systemctl enable xrdp
+
+
+
+     #+end_src
+    
+     There is also an issue with regards an authentication popup that occurs when you lock the sreen, and when you login initially. 
+ The information is contained here: https://c-nergy.be/blog/?p=14051
+
+ Two files need to be created:
+
+ In =/etc/polkit-1/localauthority/50-local.d/= there needs to be two files.
+
+ 45-allow-colord.pkla
+ #+begin_src toml
+ [Allow Colord all Users]
+ Identity=unix-user:*
+ Action=org.freedesktop.color-manager.create-device;org.freedesktop.color-manager.create-profile;org.freedesktop.color-manager.delete-device;org.freedesktop.color-manager.delete-profile;org.freedesktop.color-manager.modify-device;org.freedesktop.color-manager.modify-profile
+ ResultAny=no
+ ResultInactive=no
+ ResultActive=yes
+ #+end_src
+
+
+ 46-allow-update-repo.pkla
+ #+begin_src toml
+ [Allow Package Management all Users]
+ Identity=unix-user:*
+ Action=org.freedesktop.packagekit.system-sources-refresh
+ ResultAny=yes
+ ResultInactive=yes
+ ResultActive=yes
+ #+end_src
+
+
+*** display monitors go blank
+
+    If this happens generally all that is required is an update of the packages and a restart
+    The nvidia drivers are what get updated, and this usually fixes the issue
+
+    look at xrandr and arandr to further debug the problem if the following doesn't fix it
+    
+
+    #+begin_src shell
+      sudo apt-get update
+      sudo apt-get upgrade
+    #+end_src
+
+*** ubuntu workstations
+
+     #+begin_src 
+ apt update; 
+ sudo apt-get install landscape-client; 
+ sudo landscape-config -t hostname --account-name visma-it-communications-as --tags=Country-Norway, Division-IT_and_Hosting, Desktop, Legal_Unit-Visma_ITC, Organization-Visma_ITC, Team-Process_Automation, Team_Code-507, Username-Sivaharan_Rajkumar --script-users nobody, landscape, root --silent --registration-key=ec220ec878ec97c4a6c6808d1894e691
+     #+end_src
+
+
+
+** TODO mu4e
+   Check the video and see if it will be useful to set up email integration in emacs
+  
+   https://www.youtube.com/watch?v=yZRyEhi4y44
+  
+** TODO VSCode
+
+   - extensions that I user
+   - python setup
+     
+
+* No longer Used
+  
+  These are just listing packages/tools that I no longer use and the reasonings as to why.
+  
+**** Leiningen
+
+     Leiningen is essentially the defacto standard in how to build tools, however it seems like there are other alternative approches that make using tool no longer a necessity.
+    
+     #+begin_src shell :dir "/sudo::"  
+        sudo apt-get install -y curl
+        curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein > lein
+        sudo mv lein /usr/local/bin/lein
+        sudo chmod a+x /usr/local/bin/lein
+        lein version
+
+      #+end_src
+**** tldr
+
+     [[https://tldr.sh/][tldr]] provides a nicer manual pages than the defaults.
+     This was removed as I don't to use this tool too much as I don't live on the command line, and generally I would google any issues I have with a command line tool.
+
+     
+     #+begin_src shell :dir "/sudo::" 
+       sudo curl -o /usr/local/bin/tldr https://raw.githubusercontent.com/raylee/tldr/master/tldr
+       sudo chmod +x /usr/local/bin/tldr
+     #+end_src
+
+
+**** bat
+     This provides a nicer version of cat.
+     Though I don't seem to be using this much, and if anything I would just you vim/emacs to see the file so I can get a nice features that I would need. 
+
+     Need to install cargo first
+     
+
+     https://github.com/sharkdp/bat
+     #+begin_src shell :dir "/sudo::"  
+       sudo cargo install --locked bat
+     #+end_src
+
+
+**** autojump
+
+     [[https://github.com/wting/autojump][Autojump]] is a better cd though I don't seem to be using it too much as I usually do everything in emacs. 
+     
+     https://github.com/wting/autojump
+
+     #+begin_src shell :dir "/sudo::"  
+       sudo apt-get install autojump
+       echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc
+     #+end_src
+
+
+
+**** neofetch
+
+[[https://github.com/dylanaraps/neofetch/wiki/Installation][Neofetch]] provides a nice launch screen in your terminal. Nothing really that useful, an mainly cosmetic.
+
+
+     #+begin_src shell :dir "/sudo::"  
+       sudo apt-get install neofetch
+     #+end_src
+
+
+**** exa
+    [[https://github.com/ogham/exa][Exa]] provides a nicer ls. Not being used as I get something similar within Emacs.
+     
+     #+begin_src shell
+       sudo apt-get install -y cargo
+       cargo install exa
+       # add /home/dilzeem/.cargo/bin to path
+     #+end_src
+     
+     
