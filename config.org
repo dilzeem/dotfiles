@@ -330,9 +330,9 @@ echo "Hello World"
          // Press Ctrl+Shift+F to open the search box
          { "command": "find", "keys": "ctrl+f" },
          { "command": "newTab", "keys": "ctrl+t" },
-         { "command": "nextTab", "keys": "ctrl+j" },
-         { "command": "prevTab", "keys": "ctrl+k" },
          { "command": "closeTab", "keys": "ctrl+w" },
+         { "command": "null", "keys": "alt+enter" },
+         { "command": "null", "keys": "shift+d" },
 
          // Press Alt+Shift+D to open a new pane.
          // - "split": "auto" makes this pane open in the direction that provides the most surface area.
@@ -1095,17 +1095,106 @@ climate:
 
  
    
+** VScode
+
+Visual Studio Extension
+
+     #+begin_src json
+
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+	// List of extensions which should be recommended for users of this workspace.
+	"recommendations": [
+		"ms-python.python",
+		"visualstudioexptteam.vscodeintellicode",
+		"hashicorp.terraform",
+		"njpwerner.autodocstring",
+		"coenraads.bracket-pair-colorizer",
+		"eamodio.gitlens",
+		"jakob101.relativepath",
+		"kevinrose.vsc-python-indent",
+		"mikestead.dotenv",
+		"donjayamanne.githistory",
+		"davidanson.vscode-markdownlint",
+		"gruntfuggly.todo-tree",
+		"redhat.vscode-yaml",
+		"oderwat.indent-rainbow",
+		"atlassian.atlascode",
+		"ryanluker.vscode-coverage-gutters"
+	],
+	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+	"unwantedRecommendations": []
+}
+
+     #+end_src
+
+
+Launch Json
+
+     #+begin_src json
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
+     #+end_src
+
+
+Settings Json
+
+     #+begin_src json
+{
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "-s",
+        "--cov-report",
+        "xml:${workspaceFolder}\\cov.xml",
+        "--cov-report",
+        "html:${workspaceFolder}\\cov_reports",
+        "--cov=${workspaceFolder} "
+    ],
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--ignore=E,W,C"
+    ],
+    "python.linting.banditEnabled": true,
+    "python.linting.banditArgs": [
+        "--skip B101"
+    ],
+    "files.trimTrailingWhitespace": true,
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    }
+}
+     #+end_src
+
+
+
 ** TODO mu4e
    Check the video and see if it will be useful to set up email integration in emacs
   
    https://www.youtube.com/watch?v=yZRyEhi4y44
   
-** TODO VSCode
-
-   - extensions that I user
-   - python setup
-     
-
 * No longer Used
   
   These are just listing packages/tools that I no longer use and the reasonings as to why.
