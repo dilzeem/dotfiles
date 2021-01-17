@@ -688,176 +688,175 @@ echo "Hello World"
       (defun dotspacemacs/user-config ()
 
 
-        (load-file "user-config.el")
+        (load-file "~/.emacs.d/private/user-config.el")
 
  )  
 
     #+end_src
 
-*** clojure
+**** clojure
 
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
 
-      (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
-      (setq clojure-indent-style 'align-arguments)
-      (setq clojure-align-forms-automatically t)
-
-
-    #+end_src
-
-*** windows_nt 
-
-    This section is only really relevant when running Emacs in Windows (i.e. not WSL).
-    With the introduction of WSL as part of windows 10, this doesn't seem so relevant now.
-
-    The main point of this was for spell checking in windows 10.
-    Also included is a GUI prompt for when I am using git/ssh with a password.
-    This wasn't an issue when using linux.
+       (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
+       (setq clojure-indent-style 'align-arguments)
+       (setq clojure-align-forms-automatically t)
 
 
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+     #+end_src
 
-      (cond
-       ((string-equal system-type "windows-nt")
-        (progn
-          (setenv "GIT_ASKPASS" "git-gui--askpass")
-          (setenv "SSH_ASKPASS" "git-gui--askpass")
+**** windows_nt 
 
-          (setq ispell-program-name "~/Hunspell/bin/hunspell.exe")
-          (setenv "LANG" "en_US")
-          (setq ispell-chage-dictionary "en_US")
-          (setq ispell-hunspell-dict-paths-alist
-                '(("en_US" "~/Hunspell/share/hunspell/en_GB.aff")))
-          )))
+     This section is only really relevant when running Emacs in Windows (i.e. not WSL).
+     With the introduction of WSL as part of windows 10, this doesn't seem so relevant now.
 
-    #+end_src
+     The main point of this was for spell checking in windows 10.
+     Also included is a GUI prompt for when I am using git/ssh with a password.
+     This wasn't an issue when using linux.
+
+
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+       (cond
+        ((string-equal system-type "windows-nt")
+         (progn
+           (setenv "GIT_ASKPASS" "git-gui--askpass")
+           (setenv "SSH_ASKPASS" "git-gui--askpass")
+
+           (setq ispell-program-name "~/Hunspell/bin/hunspell.exe")
+           (setenv "LANG" "en_US")
+           (setq ispell-chage-dictionary "en_US")
+           (setq ispell-hunspell-dict-paths-alist
+                 '(("en_US" "~/Hunspell/share/hunspell/en_GB.aff")))
+           )))
+
+     #+end_src
    
-*** eshell
+**** eshell
 
-    Eshell customization, however I have slowly migrated to using vterm as it meets most of my needs now.
-    This is kept here for the occasional where I would like to explore eshell functionalities further.
+     Eshell customization, however I have slowly migrated to using vterm as it meets most of my needs now.
+     This is kept here for the occasional where I would like to explore eshell functionalities further.
 
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
 
-      ;; Eshell
-      ;; https://www.emacswiki.org/emacs/EshellPrompt
-      (defun shortened-path (path max-len)
-        "Return a modified version of `path', replacing some components
-      with single characters starting from the left to try and get
-      the path down to `max-len'"
-        (let* ((components (split-string (abbreviate-file-name path) "/"))
-               (len (+ (1- (length components))
-                       (reduce '+ components :key 'length)))
-               (str ""))
-          (while (and (> len max-len)
-                      (cdr components))
-            (setq str (concat str (if (= 0 (length (car components)))
-                                      "/"
-                                    (string (elt (car components) 0) ?/)))
-                  len (- len (1- (length (car components))))
-                  components (cdr components)))
-          (concat str (reduce (lambda (a b) (concat a "/" b)) components))))
+       ;; Eshell
+       ;; https://www.emacswiki.org/emacs/EshellPrompt
+       (defun shortened-path (path max-len)
+         "Return a modified version of `path', replacing some components
+       with single characters starting from the left to try and get
+       the path down to `max-len'"
+         (let* ((components (split-string (abbreviate-file-name path) "/"))
+                (len (+ (1- (length components))
+                        (reduce '+ components :key 'length)))
+                (str ""))
+           (while (and (> len max-len)
+                       (cdr components))
+             (setq str (concat str (if (= 0 (length (car components)))
+                                       "/"
+                                     (string (elt (car components) 0) ?/)))
+                   len (- len (1- (length (car components))))
+                   components (cdr components)))
+           (concat str (reduce (lambda (a b) (concat a "/" b)) components))))
 
-      (setq eshell-prompt-function
-            (lambda ()
-              (concat
-               (propertize "┌─[" 'face `(:foreground "green"))
-               (propertize (user-login-name) 'face `(:foreground "red"))
-               (propertize "@" 'face `(:foreground "green"))
-               (propertize (system-name) 'face `(:foreground "purple"))
-               (propertize "]──[" 'face `(:foreground "green"))
-               (propertize (format-time-string "%H:%M" (current-time)) 'face `(:foreground "yellow"))
-               (propertize "]──[" 'face `(:foreground "green"))
-               (propertize (concat (shortened-path (eshell/pwd) 40)) 'face `(:foreground "white"))
-               (propertize "]\n" 'face `(:foreground "green"))
-               (propertize "└─>" 'face `(:foreground "green"))
-               (propertize (if (= (user-uid) 0) " # " " $ ") 'face `(:foreground "green"))
-               )))
-
-
-      (defun make-shell (name)
-        "Create a shell buffer named NAME."
-        (interactive "sName: ")
-        (setq name (concat "eshell-" name))
-        (eshell)
-        (rename-buffer name))
+       (setq eshell-prompt-function
+             (lambda ()
+               (concat
+                (propertize "┌─[" 'face `(:foreground "green"))
+                (propertize (user-login-name) 'face `(:foreground "red"))
+                (propertize "@" 'face `(:foreground "green"))
+                (propertize (system-name) 'face `(:foreground "purple"))
+                (propertize "]──[" 'face `(:foreground "green"))
+                (propertize (format-time-string "%H:%M" (current-time)) 'face `(:foreground "yellow"))
+                (propertize "]──[" 'face `(:foreground "green"))
+                (propertize (concat (shortened-path (eshell/pwd) 40)) 'face `(:foreground "white"))
+                (propertize "]\n" 'face `(:foreground "green"))
+                (propertize "└─>" 'face `(:foreground "green"))
+                (propertize (if (= (user-uid) 0) " # " " $ ") 'face `(:foreground "green"))
+                )))
 
 
-    #+end_src
+       (defun make-shell (name)
+         "Create a shell buffer named NAME."
+         (interactive "sName: ")
+         (setq name (concat "eshell-" name))
+         (eshell)
+         (rename-buffer name))
 
-*** ox-hugo
 
-    Require for my current blogging setup.
+     #+end_src
+
+**** ox-hugo
+
+     Require for my current blogging setup.
    
    
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
 
-      (use-package ox-hugo
-        :ensure t 
-        :after ox)
-
-
-    #+end_src
+       (use-package ox-hugo
+         :ensure t 
+         :after ox)
 
 
-*** org-mode
+     #+end_src
 
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+**** org-mode
 
-
-      (setq org-cycle-separator-lines 0)
-
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
 
 
-
-      (setq org-src-tab-acts-natively t)
-
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       '(
-         (python . t)
-         (shell . t)
-         (clojure . t)
-         ))
-
-      (setq org-confirm-babel-evaluate nil)
-      (setq org-directory "~/Dropbox/org/i.org")
-
-      (setq org-agenda-files '("~/Dropbox/org/i.org"
-                               "~/Dropbox/org/k.org"))
-
-      (setq org-capture-templates
-            '(("t" "To Do Item" entry (file+headline "~/Dropbox/org/i.org" "Inbox")
-               "* TODO %?\nCREATED:%U" :prepend t)
-              ("j" "Journal" entry (file+datetree+prompt "~/Dropbox/org/j.org")
-               "* %?\n %t")
-              ("k" "knowledge" entry (file+olp+datetree "~/Dropbox/org/j.org")
-               "* %? %^g\n")
-              ("d" "distracted" table-line (file+headline "~/Dropbox/org/j.org" "Distractions")
-               "|%?||%U|")
-              ("h" "habit" table-line (file+headline  "~/Dropbox/org/j.org" "Habit")
-               "|%^{prompt|meditate|pushups|situps}|%?|%U|")
-              ("m" "mood" table-line (file+headline "~/Dropbox/org/j.org" "Mood")
-               "|%?||%U|")))
-
-
-      (setq org-archive-location "%s_archive::datetree/* Archived Tasks")
+       (setq org-cycle-separator-lines 0)
 
 
 
 
-    #+end_src
+       (setq org-src-tab-acts-natively t)
 
-*** misc 
+       (org-babel-do-load-languages
+        'org-babel-load-languages
+        '(
+          (python . t)
+          (shell . t)
+          (clojure . t)
+          ))
 
-    #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+       (setq org-confirm-babel-evaluate nil)
+       (setq org-directory "~/Dropbox/org/i.org")
 
-      ;; (require 'org-tempo)
+       (setq org-agenda-files '("~/Dropbox/org/i.org"
+                                "~/Dropbox/org/k.org"))
 
-      (setq python-indent-guess-indent-offset nil)
-      (setq helm-show-completion-display-function #'helm-show-completion-default-display-function)
-      (setq-default buffer-file-coding-system 'utf-8-unix)
-    #+end_src
+       (setq org-capture-templates
+             '(("t" "To Do Item" entry (file+headline "~/Dropbox/org/i.org" "Inbox")
+                "* TODO %?\nCREATED:%U" :prepend t)
+               ("j" "Journal" entry (file+datetree+prompt "~/Dropbox/org/j.org")
+                "* %?\n %t")
+               ("k" "knowledge" entry (file+olp+datetree "~/Dropbox/org/j.org")
+                "* %? %^g\n")
+               ("d" "distracted" table-line (file+headline "~/Dropbox/org/j.org" "Distractions")
+                "|%?||%U|")
+               ("h" "habit" table-line (file+headline  "~/Dropbox/org/j.org" "Habit")
+                "|%^{prompt|meditate|pushups|situps}|%?|%U|")
+               ("m" "mood" table-line (file+headline "~/Dropbox/org/j.org" "Mood")
+                "|%?||%U|")))
+
+
+       (setq org-archive-location "%s_archive::datetree/* Archived Tasks")
+
+
+
+
+     #+end_src
+
+**** misc 
+
+     #+begin_src elisp :tangle "~/.emacs.d/private/user-config.el"
+
+       ;; (require 'org-tempo)
+
+       (setq python-indent-guess-indent-offset nil)
+       (setq helm-show-completion-display-function #'helm-show-completion-default-display-function)
+       (setq-default buffer-file-coding-system 'utf-8-unix)
+     #+end_src
    
 *** Futher resources
 
