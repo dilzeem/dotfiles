@@ -1243,6 +1243,21 @@ Settings Json
   
    https://www.youtube.com/watch?v=yZRyEhi4y44
   
+** Powershell
+
+   #+begin_src shell
+     Install-Module oh-my-posh -Scope CurrentUser -AllowPrerelease
+   #+end_src
+
+
+   Need to copy the file in variable $PROFILE
+
+   Run ~$PROFILE~ and place the file l
+   
+#+begin_src shell :dir "/sudo::"  :tangle "/mnt/c/username/sivaharan.rajkumar/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1"
+     Set-PoshPrompt -Theme  negligible
+   #+end_src
+
 * No longer Used
   
   These are just listing packages/tools that I no longer use and the reasonings as to why.
