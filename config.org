@@ -230,6 +230,20 @@ echo "Hello World"
     
     
 
+*** python language server
+
+    Need to make sure that you have node.js installed first.
+    Also a version greater than version 12.
+
+
+     #+begin_src shell :dir "/sudo::"  :tangle "./clean-install.sh" 
+       curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+       nvm install --lts
+npm install -g pyright
+     #+end_src
+
+    
+    
 ** Clojure
 
     https://purelyfunctional.tv/guide/how-to-install-clojure/
@@ -563,8 +577,7 @@ echo "Hello World"
                python-test-runner 'pytest
                python-formatter 'black
                python-backend 'lsp
-               python-lsp-server 'mspyls
-               python-lsp-git-root "~/dev/python/python-language-server")
+               python-lsp-server 'pyright)
 
        (helm :variables
              helm-mode-fuzzy-match t
